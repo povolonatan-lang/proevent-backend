@@ -36,6 +36,18 @@ const AuthController = {
         } catch (error) {
             res.status(400).json({ message: error.message });
         }
+    },
+
+    clearAll: async (req, res, next) => {
+        try {
+            const User = (await import('../models/User.js')).default;
+            const Event = (await import('../models/Event.js')).default;
+            await User.deleteMany({});
+            await Event.deleteMany({});
+            res.json({ message: 'Database cleared successfully (Users and Events deleted).' });
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
     }
 };
 
