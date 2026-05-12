@@ -7,6 +7,7 @@ const AuthController = {
             const user = await AuthService.register(req.body);
             res.status(201).json({
                 message: 'User registered successfully. Please check your email to verify your account.',
+                verificationToken: user.verificationToken,
                 user: { id: user._id, name: user.name, email: user.email }
             });
         } catch (error) {

@@ -6,15 +6,10 @@ dotenv.config();
 class EmailService {
     constructor() {
         this.transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST,
-            port: parseInt(process.env.SMTP_PORT),
-            secure: process.env.SMTP_PORT == 465,
+            service: 'gmail',
             auth: {
                 user: process.env.SMTP_USER,
                 pass: process.env.SMTP_PASS,
-            },
-            tls: {
-                rejectUnauthorized: false
             }
         });
 
@@ -23,7 +18,7 @@ class EmailService {
             if (error) {
                 console.error('Email transporter error:', error);
             } else {
-                console.log('Email transporter is ready');
+                console.log('Email transporter is ready and using Gmail service');
             }
         });
     }
@@ -32,7 +27,7 @@ class EmailService {
         const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
         
         const mailOptions = {
-            from: process.env.EMAIL_FROM,
+            from: `"ProSports" <${process.env.SMTP_USER}>`,
             to: email,
             subject: 'Verify your ProSports Account',
             html: `
