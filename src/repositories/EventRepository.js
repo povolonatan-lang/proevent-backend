@@ -2,11 +2,11 @@ import Event from '../models/Event.js';
 
 class EventRepository {
     async findAll(query = {}) {
-        return await Event.find(query).populate('category').populate('organizer', 'name email');
+        return await Event.find(query).populate('category').populate('organizer', 'name email').lean();
     }
 
     async findById(id) {
-        return await Event.findById(id).populate('category').populate('organizer', 'name email');
+        return await Event.findById(id).populate('category').populate('organizer', 'name email').lean();
     }
 
     async create(eventData) {

@@ -2,15 +2,19 @@ import Category from '../models/Category.js';
 
 class CategoryRepository {
     async findAll() {
-        return await Category.find();
+        return await Category.find().lean();
     }
 
     async findById(id) {
-        return await Category.findById(id);
+        return await Category.findById(id).lean();
     }
 
     async create(categoryData) {
         return await Category.create(categoryData);
+    }
+
+    async insertMany(categories) {
+        return await Category.insertMany(categories);
     }
 
     async update(id, categoryData) {
@@ -23,3 +27,4 @@ class CategoryRepository {
 }
 
 export default new CategoryRepository();
+

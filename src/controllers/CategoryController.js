@@ -1,5 +1,10 @@
 import CategoryService from '../services/CategoryService.js';
 
+const DEFAULT_CATEGORIES = [
+    { name: 'UFC', description: 'Ultimate Fighting Championship events' },
+    { name: 'F1', description: 'Formula 1 racing events' },
+];
+
 class CategoryController {
     async getAllCategories(req, res, next) {
         try {
@@ -47,6 +52,20 @@ class CategoryController {
             next(error);
         }
     }
+
+    async seedCategories(req, res, next) {
+        try {
+            const existing = await CategoryService.getAllCategories();
+            if (existing.length > 0) {
+                return res.json({ message: 'Categories already seeded', count: existing.length, categories: existing });
+            }
+            const created = await CategoryService.seedDefaults(DEFAULT_CATEGORIES);
+            res.status(201).json({ message: 'Categories seeded successfully', count: created.length, categories: created });
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 export default new CategoryController();
+

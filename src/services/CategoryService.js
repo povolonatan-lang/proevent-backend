@@ -20,6 +20,23 @@ class CategoryService {
     async deleteCategory(id) {
         return await CategoryRepository.delete(id);
     }
+
+    async seedDefaults(categories) {
+        return await CategoryRepository.insertMany(categories);
+    }
+
+    async initialize() {
+        const existing = await CategoryRepository.findAll();
+        if (existing.length === 0) {
+            const defaults = [
+                { name: 'UFC', description: 'Ultimate Fighting Championship events' },
+                { name: 'F1', description: 'Formula 1 racing events' }
+            ];
+            await CategoryRepository.insertMany(defaults);
+            console.log('Database initialized with default categories.');
+        }
+    }
 }
 
 export default new CategoryService();
+
