@@ -5,20 +5,26 @@ dotenv.config();
 
 class EmailService {
     constructor() {
+        console.log('Initializing Email Service with user:', process.env.SMTP_USER);
+        
         this.transporter = nodemailer.createTransport({
-            service: 'gmail',
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true,
             auth: {
                 user: process.env.SMTP_USER,
                 pass: process.env.SMTP_PASS,
+            },
+            tls: {
+                rejectUnauthorized: false
             }
         });
 
-        // Verify connection on startup
         this.transporter.verify((error, success) => {
             if (error) {
-                console.error('Email transporter error:', error);
+                console.error('Email transporter error details:', error);
             } else {
-                console.log('Email transporter is ready and using Gmail service');
+                console.log('Email transporter is ready and connected');
             }
         });
     }

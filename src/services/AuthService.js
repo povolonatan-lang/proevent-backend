@@ -15,15 +15,14 @@ class AuthService {
             verificationToken
         });
 
-        // Send email in background to avoid blocking the registration process
-        EmailService.sendVerificationEmail(user.email, verificationToken)
-            .then(info => console.log('Email sent successfully:', info.messageId))
-            .catch(error => {
-                console.warn('Email sending failed. Fallback to terminal link.');
-                console.log('--- VERIFICATION LINK ---');
-                console.log(`${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`);
-                console.log('-------------------------');
-            });
+        // Sync for debugging - this will show errors in the frontend if email fails
+        try {
+            await EmailService.sendVerificationEmail(user.email, verificationToken);
+            console.log('Email sent successfully');
+        } catch (error) {
+            console.error('Email registration error:', error.message);
+            // We still return the user so they can use the emergency link if needed
+        }
 
         return user;
     }
