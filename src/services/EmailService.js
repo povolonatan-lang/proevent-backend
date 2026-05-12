@@ -24,7 +24,9 @@ class EmailService {
     }
 
     async sendVerificationEmail(email, token) {
-        const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+        // Use production URL as base for emails
+        const baseUrl = process.env.FRONTEND_URL || 'https://proevent-frontend.vercel.app';
+        const verificationUrl = `${baseUrl}/verify-email?token=${token}`;
         
         const mailOptions = {
             from: `"ProSports" <${process.env.SMTP_USER}>`,
