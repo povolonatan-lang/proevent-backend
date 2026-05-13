@@ -1,9 +1,9 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import app from './app.js';
 import connectDB from './config/db.js';
-import dotenv from 'dotenv';
 import CategoryService from './services/CategoryService.js';
-
-dotenv.config();
 
 const startServer = async () => {
     // Connect to database

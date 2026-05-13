@@ -15,14 +15,10 @@ class AuthService {
             verificationToken
         });
 
-        // Sync for debugging - this will show errors in the frontend if email fails
-        try {
-            await EmailService.sendVerificationEmail(user.email, verificationToken);
-            console.log('Email sent successfully');
-        } catch (error) {
-            console.error('Email registration error:', error.message);
-            // We still return the user so they can use the emergency link if needed
-        }
+        // Send email in background - don't make the user wait for SMTP connection
+        EmailService.sendVerificationEmail(user.email, verificationToken)
+            .then(() => console.log('Verification email sent successfully in background to:', user.email))
+            .catch(error => console.error('CRITICAL: Background email error:', error));
 
         return user;
     }

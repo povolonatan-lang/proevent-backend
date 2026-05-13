@@ -49,6 +49,21 @@ const AuthController = {
         } catch (error) {
             res.status(500).json({ message: error.message });
         }
+    },
+
+    testEmail: async (req, res, next) => {
+        try {
+            const EmailService = (await import('../services/EmailService.js')).default;
+            const info = await EmailService.sendVerificationEmail(process.env.SMTP_USER, 'test-token');
+            res.json({ message: 'Email sent successfully!', info });
+        } catch (error) {
+            console.error('Test email error:', error);
+            res.status(500).json({ 
+                message: 'Failed to send email', 
+                error: error.message,
+                stack: error.stack
+            });
+        }
     }
 };
 
