@@ -1,38 +1,14 @@
-import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 class EmailService {
     constructor() {
-        const user = process.env.SMTP_USER;
-        const pass = process.env.SMTP_PASS;
-
-        if (!user || !pass) {
-            console.warn('WARNING: Email Service missing SMTP credentials in .env');
+        if (!process.env.BREVO_API_KEY) {
+            console.warn('WARNING: Email Service missing BREVO_API_KEY in .env');
+        } else {
+            console.log('Email Service: Brevo API Key configured');
         }
-
-        this.transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 587,
-            secure: false, // Use STARTTLS
-            auth: {
-                user: user,
-                pass: pass,
-            },
-            tls: {
-                rejectUnauthorized: false
-            }
-        });
-
-        // Test connection on startup
-        this.transporter.verify((error, success) => {
-            if (error) {
-                console.error('Email Service: Connection failed', error.message);
-            } else {
-                console.log('Email Service: Connection successful and ready');
-            }
-        });
     }
 
     async sendVerificationEmail(email, token) {
@@ -40,13 +16,27 @@ class EmailService {
         const verificationUrl = `${baseUrl}/verify-email?token=${token}`;
         
         const fromName = process.env.EMAIL_FROM_NAME || 'ProSports';
-        const fromEmail = process.env.SMTP_USER;
+        // We use the same SMTP_USER env var for the sender email, since it's the verified email in Brevo
+        const fromEmail = process.env.SMTP_USER || 'prinzi2900@gmail.com'; 
 
-        const mailOptions = {
-            from: `"${fromName}" <${fromEmail}>`,
-            to: email,
+        const apiKey = process.env.BREVO_API_KEY;
+        if (!apiKey) {
+            console.error('Cannot send email: BREVO_API_KEY is missing');
+            return null;
+        }
+
+        const payload = {
+            sender: {
+                name: fromName,
+                email: fromEmail
+            },
+            to: [
+                {
+                    email: email
+                }
+            ],
             subject: 'Verifica tu cuenta de ProSports',
-            html: `
+            htmlContent: `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e4e7; border-radius: 16px;">
                     <h1 style="color: #aa3bff; margin-bottom: 20px;">¡Bienvenido a ProSports!</h1>
                     <p style="color: #6b6375; font-size: 16px; line-height: 1.5;">Para activar tu cuenta y empezar a organizar eventos, por favor verifica tu correo electrónico haciendo clic en el siguiente botón:</p>
@@ -57,16 +47,32 @@ class EmailService {
                     <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
                     <p style="color: #9ca3af; font-size: 12px; text-align: center;">ProSports Team</p>
                 </div>
-            `,
+            `
         };
 
         try {
-            const info = await this.transporter.sendMail(mailOptions);
-            console.log('Email sent: %s', info.messageId);
-            return info;
+            const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+                method: 'POST',
+                headers: {
+                    'accept': 'application/json',
+                    'api-key': apiKey,
+                    'content-type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const data = await response.json().catch(() => ({}));
+                console.error('Brevo API Error Details:', data);
+                throw new Error(data.message || 'Failed to send email via Brevo');
+            }
+
+            const data = await response.json();
+            console.log('Email sent successfully via Brevo API, messageId:', data.messageId);
+            return data;
         } catch (error) {
-            console.error('Failed to send email to:', email);
-            throw error; // Rethrow so AuthService can log the full error
+            console.error('Failed to send email to:', email, error.message);
+            throw error;
         }
     }
 }
